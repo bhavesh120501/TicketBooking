@@ -1,0 +1,26 @@
+# Node.js dependencies
+node_modules/
+
+# Environment files
+.env
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Database files (if you have them locally for testing purposes)
+*.sqlite
+*.db
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# IDE/Editor folders
+.idea/
+.vscode/
+
+# Backup files
+*.bak
