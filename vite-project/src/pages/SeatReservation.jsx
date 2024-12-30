@@ -26,32 +26,34 @@ export const SeatReservation = () => {
     let bookedSeats = [];
     let remainingSeats = count;
 
-    // Step 1: Try to book in contiguous blocks in the rows
+    // Step 1: Try to book seats in contiguous blocks within rows
     for (let row = 0; row < 12; row++) {
       const start = row * ROW_SIZE;
       const end = row === 11 ? start + SEATS_IN_LAST_ROW : start + ROW_SIZE;
       const rowSeats = updatedSeats.slice(start, end);
 
-      // Find available contiguous seats in the row
+      // If the row has fewer seats than required, skip it
+      if (rowSeats.filter(seat => seat === 0).length < remainingSeats) continue; // Skip rows that don't have enough available seats
+
+      // Try to book contiguous seats within this row
       let availableSeatsInRow = [];
       for (let i = 0; i < rowSeats.length; i++) {
         if (rowSeats[i] === 0) {
           availableSeatsInRow.push(i);
         } else {
-          if (availableSeatsInRow.length > 0) {
-            if (availableSeatsInRow.length >= remainingSeats) {
-              bookedSeats.push(...availableSeatsInRow.slice(0, remainingSeats).map(seatIndex => start + seatIndex));
-              remainingSeats = 0;
-              break;
-            }
-            remainingSeats -= availableSeatsInRow.length;
-            bookedSeats.push(...availableSeatsInRow.map(seatIndex => start + seatIndex));
-            availableSeatsInRow = [];
+          // If contiguous seats are enough, book them
+          if (availableSeatsInRow.length >= remainingSeats) {
+            bookedSeats.push(...availableSeatsInRow.slice(0, remainingSeats).map(seatIndex => start + seatIndex));
+            remainingSeats = 0;
+            break;
           }
+          remainingSeats -= availableSeatsInRow.length;
+          bookedSeats.push(...availableSeatsInRow.map(seatIndex => start + seatIndex));
+          availableSeatsInRow = [];
         }
       }
 
-      // Handle the last available block in the row (if it's not already booked)
+      // After loop, check if there are enough contiguous seats left in the row
       if (availableSeatsInRow.length >= remainingSeats) {
         bookedSeats.push(...availableSeatsInRow.slice(0, remainingSeats).map(seatIndex => start + seatIndex));
         remainingSeats = 0;
@@ -61,11 +63,10 @@ export const SeatReservation = () => {
         remainingSeats -= availableSeatsInRow.length;
       }
 
-      // If we've already booked all seats, stop checking further rows
       if (remainingSeats === 0) break;
     }
 
-    // Step 2: If there are remaining seats, try to book them across rows (remaining empty rows)
+    // Step 2: If there are remaining seats, book them across rows
     if (remainingSeats > 0) {
       for (let row = 0; row < 12; row++) {
         const start = row * ROW_SIZE;
@@ -90,13 +91,13 @@ export const SeatReservation = () => {
       }
     }
 
-    // If there are still remaining seats after all attempts, show an error
+    // Step 3: If there are still remaining seats after all attempts, show an error
     if (remainingSeats > 0) {
       alert('Not enough seats available.');
       return;
     }
 
-    // Step 3: Mark the booked seats as '2' (Booked)
+    // Step 4: Mark the booked seats as '2' (Booked)
     bookedSeats.forEach(seatIndex => {
       updatedSeats[seatIndex] = 2;
     });
@@ -107,7 +108,7 @@ export const SeatReservation = () => {
     // Update the booked seat numbers state
     setBookedSeatNumbers(bookedSeats.map(seat => seat + 1)); // Convert to 1-based seat numbers
 
-    // Notify user of the booked seats
+    // Notify the user about the booked seats
     alert(`Successfully booked seats: ${bookedSeats.map(seat => seat + 1).join(', ')}`);
   };
 
